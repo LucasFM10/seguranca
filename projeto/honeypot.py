@@ -17,8 +17,13 @@ def get_geolocation(ip):
     except Exception:
         return "Geolocation lookup failed"
 
-@app.route("/", defaults={"path": ""}, methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
-@app.route("/<path:path>", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+@app.route("/", methods=["GET"])
+def home():
+    """Página inicial (home) do app"""
+    return "Bem-vindo à Home do Aplicativo!"
+
+@app.route("/honeypot", defaults={"path": ""}, methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+@app.route("/honeypot/<path:path>", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 def honeypot(path):
     """Logs incoming requests, fetches geolocation, and responds with a fake '403 Forbidden' message."""
     ip_address = request.remote_addr
