@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template_string
+from flask import Flask, request, render_template
 import requests
 
 app = Flask(__name__)
@@ -36,14 +36,7 @@ def home():
     request_logs.append(log_entry)
 
     # Exibe as requisições na página inicial
-    logs_html = "<br>".join([f"<b>{log['method']}</b> {log['path']} - {log['location']}" for log in request_logs])
-
-    # Retorna as informações no formato HTML
-    return render_template_string(f"""
-    <h1>Bem-vindo à Home do Aplicativo!</h1>
-    <h3>Requisições recentes:</h3>
-    <div>{logs_html}</div>
-    """)
+    return render_template("index.html", logs=request_logs)
 
 # Rota Honeypot (para registro de requisições indesejadas)
 @app.route("/honeypot", defaults={"path": ""}, methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
