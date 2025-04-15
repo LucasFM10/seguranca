@@ -19,7 +19,7 @@ def get_geolocation(ip):
 
 @app.route("/", methods=["GET"])
 def home():
-    """Página inicial (home) do app de Lucas, Mateus e Mauro"""
+    """Página inicial (home) do app de Lucas, Mateus e Mauro!!!"""
     return "Bem-vindo à Home do Aplicativo!"
 
 @app.route("/honeypot", defaults={"path": ""}, methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
