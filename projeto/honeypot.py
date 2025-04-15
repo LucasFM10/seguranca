@@ -15,28 +15,19 @@ def get_geolocation(ip):
     except Exception:
         return "Geolocation lookup failed"
 
-# Rota principal
-@app.route("/", methods=["GET", "POST"])
+# Rota principal (home) - Página estática
+@app.route("/", methods=["GET"])
 def home():
-    # Captura a requisição
-    ip_address = request.remote_addr
-    method = request.method
-    path = request.path
-    headers = dict(request.headers)
-    location = get_geolocation(ip_address)
+    return """
+    <h1>Bem-vindo à Home do Aplicativo!</h1>
+    <p>Esta página não contém informações sobre as requisições.</p>
+    """
 
-    # Armazena os logs na lista
-    log_entry = {
-        'ip': ip_address,
-        'method': method,
-        'path': path,
-        'location': location,
-        'headers': headers
-    }
-    request_logs.append(log_entry)
-
-    # Exibe as requisições na página inicial
-    return render_template("index.html", logs=request_logs)
+# Rota de Logs (/logging) - Página dinâmica
+@app.route("/logging", methods=["GET"])
+def logging():
+    # Exibe os logs na página
+    return render_template("logging.html", logs=request_logs)
 
 # Rota Honeypot (para registro de requisições indesejadas)
 @app.route("/honeypot", defaults={"path": ""}, methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
@@ -45,10 +36,18 @@ def honeypot(path):
     ip_address = request.remote_addr
     location = get_geolocation(ip_address)
 
-    # Log da requisição
-    log_entry = f"Intruder Alert! IP: {ip_address}, Location: {location}, Method: {request.method}, Path: {request.path}, Headers: {dict(request.headers)}"
-    print(log_entry)  # Também exibe no console para monitoramento
+    # Cria o log da requisição
+    log_entry = {
+        'ip': ip_address,
+        'method': request.method,
+        'path': request.path,
+        'location': location
+    }
 
+    # Armazena o log na lista
+    request_logs.append(log_entry)
+
+    # Emite a resposta
     return "403 Forbidden - Access Denied", 403
 
 if __name__ == "__main__":
