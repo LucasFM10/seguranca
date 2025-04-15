@@ -1,1 +1,1 @@
-web: gunicorn honeypot:app
+web: gunicorn projeto.honeypot:app
