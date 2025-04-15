@@ -1,15 +1,13 @@
-from flask import Flask, request
-import logging
+from flask import Flask, request, render_template_string
 import requests
 
 app = Flask(__name__)
 
-# Configure logging
-logging.basicConfig(filename="honeypot.log", level=logging.INFO, 
-                    format="%(asctime)s - %(message)s")
+# Lista para armazenar logs em memória
+request_logs = []
 
+# Função para obter a geolocalização do IP
 def get_geolocation(ip):
-    """Fetch geolocation data from ipinfo.io API."""
     try:
         response = requests.get(f"http://ipinfo.io/{ip}/json", timeout=5)
         data = response.json()
@@ -17,23 +15,46 @@ def get_geolocation(ip):
     except Exception:
         return "Geolocation lookup failed"
 
-@app.route("/", methods=["GET"])
+# Rota principal
+@app.route("/", methods=["GET", "POST"])
 def home():
-    """Página inicial (home)"""
-    return "Bem-vindo à Home do Aplicativo de Lucas, Mateus e Mauro!!!!"
+    # Captura a requisição
+    ip_address = request.remote_addr
+    method = request.method
+    path = request.path
+    headers = dict(request.headers)
+    location = get_geolocation(ip_address)
 
+    # Armazena os logs na lista
+    log_entry = {
+        'ip': ip_address,
+        'method': method,
+        'path': path,
+        'location': location,
+        'headers': headers
+    }
+    request_logs.append(log_entry)
+
+    # Exibe as requisições na página inicial
+    logs_html = "<br>".join([f"<b>{log['method']}</b> {log['path']} - {log['location']}" for log in request_logs])
+
+    # Retorna as informações no formato HTML
+    return render_template_string(f"""
+    <h1>Bem-vindo à Home do Aplicativo!</h1>
+    <h3>Requisições recentes:</h3>
+    <div>{logs_html}</div>
+    """)
+
+# Rota Honeypot (para registro de requisições indesejadas)
 @app.route("/honeypot", defaults={"path": ""}, methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 @app.route("/honeypot/<path:path>", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 def honeypot(path):
-    """Logs incoming requests, fetches geolocation, and responds with a fake '403 Forbidden' message."""
     ip_address = request.remote_addr
     location = get_geolocation(ip_address)
-    
+
+    # Log da requisição
     log_entry = f"Intruder Alert! IP: {ip_address}, Location: {location}, Method: {request.method}, Path: {request.path}, Headers: {dict(request.headers)}"
-    
-    # Write to log file
-    logging.info(log_entry)
-    print(log_entry)  # Print to console for real-time monitoring
+    print(log_entry)  # Também exibe no console para monitoramento
 
     return "403 Forbidden - Access Denied", 403
 
