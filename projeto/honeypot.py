@@ -1,9 +1,7 @@
 from flask import Flask, request, render_template_string
-from flask_socketio import SocketIO, emit
 import requests
 
 app = Flask(__name__)
-socketio = SocketIO(app)
 
 # Lista para armazenar logs em memória
 request_logs = []
@@ -17,28 +15,34 @@ def get_geolocation(ip):
     except Exception:
         return "Geolocation lookup failed"
 
-# Rota Home - Página estática
-@app.route("/", methods=["GET"])
+# Rota principal
+@app.route("/", methods=["GET", "POST"])
 def home():
-    return """
-    <h1>Bem-vindo à Home do Aplicativo!</h1>
-    <p>Esta página não contém informações sobre as requisições.</p>
-    """
+    # Captura a requisição
+    ip_address = request.remote_addr
+    method = request.method
+    path = request.path
+    headers = dict(request.headers)
+    location = get_geolocation(ip_address)
 
-# Rota de Logs - Página dinâmica
-@app.route("/logging", methods=["GET", "POST"])
-def logging():
-    return render_template_string("""
-    <h1>Página de Logs (Atualização Dinâmica)</h1>
-    <div id="logs"></div>
-    <script src="https://cdn.socket.io/4.5.1/socket.io.min.js"></script>
-    <script type="text/javascript">
-        var socket = io.connect('http://' + document.domain + ':' + location.port);
-        socket.on('new_log', function(data) {
-            var logsDiv = document.getElementById("logs");
-            logsDiv.innerHTML += "<p><b>" + data.method + "</b> " + data.path + " - " + data.location + "</p>";
-        });
-    </script>
+    # Armazena os logs na lista
+    log_entry = {
+        'ip': ip_address,
+        'method': method,
+        'path': path,
+        'location': location,
+        'headers': headers
+    }
+    request_logs.append(log_entry)
+
+    # Exibe as requisições na página inicial
+    logs_html = "<br>".join([f"<b>{log['method']}</b> {log['path']} - {log['location']}" for log in request_logs])
+
+    # Retorna as informações no formato HTML
+    return render_template_string(f"""
+    <h1>Bem-vindo à Home do Aplicativo!</h1>
+    <h3>Requisições recentes:</h3>
+    <div>{logs_html}</div>
     """)
 
 # Rota Honeypot (para registro de requisições indesejadas)
@@ -47,21 +51,12 @@ def logging():
 def honeypot(path):
     ip_address = request.remote_addr
     location = get_geolocation(ip_address)
-    
-    log_entry = {
-        'ip': ip_address,
-        'method': request.method,
-        'path': request.path,
-        'location': location
-    }
-    
-    # Adiciona o log à lista
-    request_logs.append(log_entry)
 
-    # Emite o novo log para os clientes conectados ao socket
-    socketio.emit('new_log', log_entry)
+    # Log da requisição
+    log_entry = f"Intruder Alert! IP: {ip_address}, Location: {location}, Method: {request.method}, Path: {request.path}, Headers: {dict(request.headers)}"
+    print(log_entry)  # Também exibe no console para monitoramento
 
     return "403 Forbidden - Access Denied", 403
 
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=8080)
