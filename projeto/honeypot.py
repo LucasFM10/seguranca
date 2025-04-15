@@ -1,10 +1,25 @@
 from flask import Flask, request, render_template
+from flask_sqlalchemy import SQLAlchemy
 import requests
 
 app = Flask(__name__)
 
-# Lista para armazenar logs em memória
-request_logs = []
+# Configuração do banco de dados SQLite
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///logs.db'  # Nome do banco de dados
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Desativa o rastreamento de modificações
+
+db = SQLAlchemy(app)
+
+# Modelo de Log
+class Log(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ip = db.Column(db.String(100))
+    method = db.Column(db.String(10))
+    path = db.Column(db.String(200))
+    location = db.Column(db.String(200))
+
+    def __repr__(self):
+        return f"<Log {self.method} {self.path}>"
 
 # Função para obter a geolocalização do IP
 def get_geolocation(ip):
@@ -26,8 +41,8 @@ def home():
 # Rota de Logs (/logging) - Página dinâmica
 @app.route("/logging", methods=["GET"])
 def logging():
-    # Exibe os logs na página
-    return render_template("logging.html", logs=request_logs)
+    logs = Log.query.all()  # Recupera todos os logs do banco de dados
+    return render_template("logging.html", logs=logs)
 
 # Rota Honeypot (para registro de requisições indesejadas)
 @app.route("/honeypot", defaults={"path": ""}, methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
@@ -37,18 +52,17 @@ def honeypot(path):
     location = get_geolocation(ip_address)
 
     # Cria o log da requisição
-    log_entry = {
-        'ip': ip_address,
-        'method': request.method,
-        'path': request.path,
-        'location': location
-    }
+    log_entry = Log(ip=ip_address, method=request.method, path=request.path, location=location)
 
-    # Armazena o log na lista
-    request_logs.append(log_entry)
+    # Armazena o log no banco de dados
+    db.session.add(log_entry)
+    db.session.commit()
 
-    # Emite a resposta
     return "403 Forbidden - Access Denied", 403
+
+# Cria o banco de dados (apenas na primeira vez)
+with app.app_context():
+    db.create_all()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
