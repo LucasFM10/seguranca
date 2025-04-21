@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template
 import requests
+import json
 
 app = Flask(__name__)
 
@@ -46,6 +47,11 @@ def honeypot(path):
 
     # Armazena o log na lista
     request_logs.append(log_entry)
+
+    # Também salvar no arquivo
+    with open("projeto/honeypot.log", "a") as log_file:
+        print("aaa")
+        log_file.write(json.dumps(log_entry) + "\n")
 
     # Emite a resposta
     return "403 Forbidden - Access Denied", 403

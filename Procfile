@@ -1,1 +1,2 @@
-web: gunicorn projeto.honeypot:app
+release: python manage.py migrate
+web: gunicorn honeypot.wsgi --log-file=-
