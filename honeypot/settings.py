@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-7@b2r=m%r6jzn8j98@i6p6g2*utk^y9r!gwaqdk_x%3*y4x7=^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['potedemel.ninja']
+ALLOWED_HOSTS = ['www.potedemel.ninja']
 
 
 # Application definition
