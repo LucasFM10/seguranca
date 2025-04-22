@@ -59,18 +59,18 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'dcrm.wsgi.application'
+# WSGI_APPLICATION = 'dcrm.wsgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 
 # DATABASES = {
@@ -84,16 +84,16 @@ WSGI_APPLICATION = 'dcrm.wsgi.application'
 #     }
 # }
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'das8k667fehedb',
-        'USER': 'u9pna1h5b1f0ek',
-        'PASSWORD': 'p063c0907aa78378efe4d08360b93454a0c45375fa5d63b13c7ce13e2948337a0',
-        'HOST': 'caij57unh724n3.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com',  # ou o host do Heroku
-        'PORT': '5432',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'das8k667fehedb',
+#         'USER': 'u9pna1h5b1f0ek',
+#         'PASSWORD': 'p063c0907aa78378efe4d08360b93454a0c45375fa5d63b13c7ce13e2948337a0',
+#         'HOST': 'caij57unh724n3.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com',  # ou o host do Heroku
+#         'PORT': '5432',
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
